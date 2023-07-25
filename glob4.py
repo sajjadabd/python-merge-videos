@@ -5,6 +5,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 from datetime import timedelta
 
+import time
 
 
 def get_video_durations(video_files):
@@ -73,9 +74,15 @@ def main():
         
         print()
         
-    return
+    
+    start_time = time.time()
     
     merge_videos(video_files, os.path.join(root_directory, output_filename))
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"\nVideo merging completed. Time taken: {timedelta(seconds=elapsed_time)}")
+    
     print("Video merge completed. Output saved as 'final.mp4' in the root directory.")
 
 if __name__ == "__main__":

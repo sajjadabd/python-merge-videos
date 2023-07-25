@@ -4,6 +4,42 @@ from datetime import timedelta
 from natsort import natsorted
 from tqdm import tqdm
 import time
+from moviepy.editor import VideoFileClip, AudioFileClip , concatenate_audioclips
+
+
+
+def concatenate_video_audio(video_files, output_audio_filename):
+    audio_clips = []
+    for file in video_files:
+        clip = VideoFileClip(file)
+        audio_clip = clip.audio
+        if audio_clip is not None:
+            audio_clips.append(audio_clip)
+        #clip.reader.close()
+
+    if audio_clips:
+        final_audio = concatenate_audioclips(audio_clips)
+        final_audio.write_audiofile(output_audio_filename, codec='mp3')
+        print("Final audio 'final.mp3' has been created.")
+    else:
+        print("No audio clips found in the video files.")
+        
+        
+def set_audio_to_video(video_file, audio_file, output_file):
+    video_clip = VideoFileClip(video_file)
+    audio_clip = AudioFileClip(audio_file)
+
+    # Set audio of the video clip to the audio clip
+    video_clip = video_clip.set_audio(audio_clip)
+
+    # Save the output video with the combined audio
+    video_clip.write_videofile(output_file, codec="libx264", audio_codec="aac")
+
+    video_clip.reader.close()
+    audio_clip.reader.close()
+    
+    
+
 
 def get_video_durations(video_files):
     durations = []
@@ -55,6 +91,7 @@ def merge_videos(video_files, output_file):
 def main():
     # Get the absolute path of the current directory (where the script is located)
     current_directory = os.path.abspath(os.path.dirname(__file__))
+    output_audio_filename = "final.mp3"
 
     video_files = []
     for root, _, files in os.walk(current_directory):
@@ -67,6 +104,10 @@ def main():
     else:
         # Sort the video files using natsorted
         sorted_video_files = natsorted(video_files)
+        
+        
+        concatenate_video_audio(sorted_video_files, output_audio_filename)
+        
 
         durations = get_video_durations(sorted_video_files)
 
@@ -81,6 +122,11 @@ def main():
         output_filename = os.path.join(current_directory, "final.mp4")
         merge_videos(sorted_video_files, output_filename)
         print(f"\nVideos merged and saved as '{output_filename}'.")
+        
+    video_file = "final.mp4"
+    audio_file = "final.mp3"
+    output_file = "final_video.mp4"    
+    set_audio_to_video(video_file, audio_file, output_file)
 
 if __name__ == "__main__":
     main()
